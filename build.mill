@@ -18,7 +18,8 @@ import com.github.lolgab.mill.mima._
 val scala212  = "2.12.18"
 val scala213  = "2.13.11"
 
-val scala3   = "3.3.4"
+val scala3 = "3.3.4"
+val scala3NamedTuples = "3.7.0-RC2"
 val scalaNative = "0.5.5"
 val acyclic = "0.3.12"
 
@@ -389,28 +390,29 @@ trait BenchModule extends CommonPlatformModule{
 }
 
 object upickle_named_tuples extends Module {
-  // todo: replace with scala3 version when upickle moves to next LTS
-  val scalaVersionWithNamedTuples = Seq("3.6.1")
 
-  object js extends Cross[CoreJsModule](scalaVersionWithNamedTuples)
+  object js extends Cross[CoreJsModule](scala3NamedTuples)
   trait CoreJsModule extends CommonJsModule with upickle.core.CommonCoreModule {
-    override def scalaVersion: Target[String] = scalaVersionWithNamedTuples.head
-    override def moduleDeps: Seq[PublishModule] = Seq(upickle.core.js())
-    object test extends CommonTestModule
+    override def moduleDeps = Seq(upickle.js(scala3))
+    object test extends CommonTestModule {
+      def moduleDeps = Seq(upickle.js(scala3).test)
+    }
   }
 
-  object jvm extends Cross[CoreJvmModule](scalaVersionWithNamedTuples)
+  object jvm extends Cross[CoreJvmModule](scala3NamedTuples)
   trait CoreJvmModule extends CommonJvmModule with upickle.core.CommonCoreModule{
-    override def scalaVersion: Target[String] = scalaVersionWithNamedTuples.head
-    override def ivyDeps: Target[Agg[Dep]] = Agg(ivy"com.lihaoyi::upickle::4.0.2")
-    // override def moduleDeps = super.moduleDeps ++ Seq(upickle.implicits.jvm(scala3))
-    object test extends CommonTestModule
+    override def moduleDeps = Seq(upickle.jvm(scala3))
+    object test extends CommonTestModule {
+      def moduleDeps = Seq(upickle.jvm(scala3).test)
+    }
   }
 
-  object native extends Cross[CoreNativeModule](scalaVersionWithNamedTuples)
+  object native extends Cross[CoreNativeModule](scala3NamedTuples)
   trait CoreNativeModule extends CommonNativeModule with upickle.core.CommonCoreModule {
-    override def scalaVersion: Target[String] = scalaVersionWithNamedTuples.head
-    object test extends CommonTestModule
+    override def moduleDeps = Seq(upickle.native(scala3))
+    object test extends CommonTestModule {
+      def moduleDeps = Seq(upickle.native(scala3).test)
+    }
   }
 }
 
